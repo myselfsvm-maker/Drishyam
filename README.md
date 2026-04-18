@@ -1,4 +1,4 @@
-# drshyam — YouTube-like Video Platform
+# drshyam — Video Platform
 
 A complete, browser-based video streaming platform with real recommendation algorithms, multi-source video support and full UI.
 
