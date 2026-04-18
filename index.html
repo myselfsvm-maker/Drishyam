@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>drshyam — Watch, Discover, Create</title>
+  <meta name="description" content="drshyam — a YouTube-like video platform with intelligent recommendation, trending and search algorithms."/>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%2300D4C8'/><text y='72' x='14' font-size='72' font-weight='900' fill='%230A0A0B' font-family='serif'>d</text></svg>"/>
+  <link rel="stylesheet" href="css/main.css"/>
+</head>
+<body>
+
+<!-- ╔══════════════════════════════════════════════════════════╗
+     ║                       HEADER                              ║
+     ╚══════════════════════════════════════════════════════════╝ -->
+<header class="header">
+  <div class="header-left">
+    <button class="hamburger" onclick="toggleSidebar()" title="Menu">☰</button>
+    <a class="logo" onclick="navigate('home')">
+      <div class="logo-icon">d</div>
+      <span class="logo-text">drshyam</span>
+    </a>
+  </div>
+
+  <div class="header-center">
+    <div class="search-wrap">
+      <div class="search-bar">
+        <input id="search-input" class="search-input" type="text"
+          placeholder="Search videos, channels, topics…"
+          onkeydown="handleSearch(event)" oninput="showSuggestions(this.value)"
+          onfocus="showSuggestions(this.value)" onblur="hideSuggestions()"/>
+        <button class="search-btn" onclick="navigate('search',$('search-input').value)" title="Search">🔍</button>
+      </div>
+      <div id="suggestions-box" style="display:none"></div>
+    </div>
+  </div>
+
+  <div class="header-right">
+    <button class="icon-btn" title="Upload" onclick="showToast('Upload feature — connect Firebase Storage to enable!')">📤</button>
+    <button class="icon-btn" title="Notifications" onclick="showToast('No new notifications')">🔔</button>
+    <div class="user-menu-wrap">
+      <div id="user-btn">
+        <button class="sign-in-btn" onclick="openAuth()">Sign in</button>
+      </div>
+      <div id="user-menu">
+        <div class="menu-user-info" id="menu-user-info">
+          <div class="menu-user-name" id="menu-name">Guest</div>
+          <div class="menu-user-handle" id="menu-handle">@guest</div>
+        </div>
+        <button class="menu-item" onclick="navigate('library');closeUserMenu()">📚 Your Library</button>
+        <button class="menu-item" onclick="navigate('subscriptions');closeUserMenu()">📡 Subscriptions</button>
+        <button class="menu-item" onclick="showToast('Creator Studio — coming soon!')">🎬 Creator Studio</button>
+        <div class="menu-divider"></div>
+        <button class="menu-item" onclick="showToast('Settings — coming soon!')">⚙️ Settings</button>
+        <button class="menu-item" onclick="signOut()">🚪 Sign out</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ╔══════════════════════════════════════════════════════════╗
+     ║                       LAYOUT                              ║
+     ╚══════════════════════════════════════════════════════════╝ -->
+<div id="layout">
+
+  <!-- ── SIDEBAR ──────────────────────────────────────────── -->
+  <div id="sidebar-overlay" onclick="closeSidebar()"></div>
+  <aside id="sidebar">
+
+    <div class="nav-section">
+      <button class="nav-link active" data-view="home" onclick="navigate('home');closeSidebar()">
+        <span class="nav-icon">🏠</span> Home
+      </button>
+      <button class="nav-link" data-view="shorts" onclick="navigate('shorts');closeSidebar()">
+        <span class="nav-icon">⚡</span> Shorts
+      </button>
+      <button class="nav-link" data-view="subscriptions" onclick="navigate('subscriptions');closeSidebar()">
+        <span class="nav-icon">📡</span> Subscriptions
+      </button>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-title">You</div>
+      <button class="nav-link" data-view="library" onclick="navigate('library');closeSidebar()">
+        <span class="nav-icon">📚</span> Library
+      </button>
+      <button class="nav-link" onclick="navigate('library');closeSidebar()">
+        <span class="nav-icon">🕐</span> Watch History
+      </button>
+      <button class="nav-link" onclick="navigate('library');closeSidebar()">
+        <span class="nav-icon">🔖</span> Watch Later
+      </button>
+      <button class="nav-link" onclick="navigate('library');closeSidebar()">
+        <span class="nav-icon">👍</span> Liked Videos
+      </button>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-title">Discover</div>
+      <button class="nav-link" data-view="trending" onclick="navigate('trending');closeSidebar()">
+        <span class="nav-icon">🔥</span> Trending
+      </button>
+      <button class="nav-link" onclick="selectCategory('Music');closeSidebar()">
+        <span class="nav-icon">🎵</span> Music
+      </button>
+      <button class="nav-link" onclick="selectCategory('Gaming');closeSidebar()">
+        <span class="nav-icon">🎮</span> Gaming
+      </button>
+      <button class="nav-link" onclick="selectCategory('Sports');closeSidebar()">
+        <span class="nav-icon">⚽</span> Sports
+      </button>
+      <button class="nav-link" onclick="selectCategory('Technology');closeSidebar()">
+        <span class="nav-icon">💻</span> Technology
+      </button>
+      <button class="nav-link" onclick="selectCategory('Science');closeSidebar()">
+        <span class="nav-icon">🔬</span> Science
+      </button>
+    </div>
+
+    <div class="nav-section" id="sidebar-subs">
+      <div class="nav-section-title">Subscriptions</div>
+      <!-- Dynamically filled -->
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-title">drshyam</div>
+      <button class="nav-link" onclick="showToast('About drshyam — built with ❤️ and smart algorithms')">
+        <span class="nav-icon">ℹ️</span> About
+      </button>
+      <button class="nav-link" onclick="showToast('Press — contact@drshyam.app')">
+        <span class="nav-icon">📰</span> Press
+      </button>
+      <button class="nav-link" onclick="showToast('Algorithms: Trending (Wilson), Search (TF-IDF+Fuzzy), Feed (Collaborative Filtering), WatchNext (Content-Based)')">
+        <span class="nav-icon">🧠</span> Algorithms
+      </button>
+    </div>
+
+  </aside>
+
+  <!-- ── MAIN ──────────────────────────────────────────────── -->
+  <div id="main-wrap">
+
+    <!-- HOME PAGE -->
+    <div id="page-home" class="page active">
+      <div id="main-content">
+        <!-- Filled by JS -->
+      </div>
+    </div>
+
+    <!-- WATCH PAGE -->
+    <div id="page-watch" class="page">
+      <!-- Filled by JS -->
+    </div>
+
+    <!-- SEARCH PAGE -->
+    <div id="page-search" class="page">
+      <!-- Filled by JS -->
+    </div>
+
+    <!-- CHANNEL PAGE -->
+    <div id="page-channel" class="page">
+      <!-- Filled by JS -->
+    </div>
+
+  </div><!-- /main-wrap -->
+</div><!-- /layout -->
+
+<!-- ╔══════════════════════════════════════════════════════════╗
+     ║                    AUTH MODAL                             ║
+     ╚══════════════════════════════════════════════════════════╝ -->
+<div id="auth-modal" class="modal-overlay">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeAuth()">✕</button>
+
+    <div class="modal-logo">
+      <span class="logo-text">drshyam</span>
+    </div>
+
+    <!-- Tabs -->
+    <div class="auth-tabs">
+      <button class="auth-tab-btn active" data-tab="signin" onclick="switchAuthTab('signin')">Sign In</button>
+      <button class="auth-tab-btn" data-tab="signup" onclick="switchAuthTab('signup')">Sign Up</button>
+    </div>
+
+    <!-- Sign In -->
+    <div id="auth-signin" class="auth-panel active">
+      <div class="auth-field">
+        <label>Email</label>
+        <input type="email" id="auth-email" placeholder="you@example.com"/>
+      </div>
+      <div class="auth-field">
+        <label>Password</label>
+        <input type="password" id="auth-pass" placeholder="••••••••"
+          onkeydown="if(event.key==='Enter')submitAuth()"/>
+      </div>
+    </div>
+
+    <!-- Sign Up -->
+    <div id="auth-signup" class="auth-panel">
+      <div class="auth-field">
+        <label>Your Name</label>
+        <input type="text" id="auth-name" placeholder="e.g. Dr. Shyam"/>
+      </div>
+      <div class="auth-field">
+        <label>Email</label>
+        <input type="email" id="auth-email-2" placeholder="you@example.com"/>
+      </div>
+      <div class="auth-field">
+        <label>Password</label>
+        <input type="password" id="auth-pass-2" placeholder="Minimum 6 characters"
+          onkeydown="if(event.key==='Enter')submitAuth()"/>
+      </div>
+    </div>
+
+    <button class="auth-submit" onclick="submitAuth()">Continue</button>
+
+    <div class="auth-divider"><span>or</span></div>
+
+    <button class="google-auth" onclick="showToast('Connect Firebase Auth to enable Google Sign-In!')">
+      <svg width="18" height="18" viewBox="0 0 18 18">
+        <path fill="#4285F4" d="M16.51 8H8.98v3h4.3c-.18 1-.74 1.48-1.6 2.04v2.01h2.6a7.8 7.8 0 0 0 2.38-5.88c0-.57-.05-.66-.15-1.18z"/>
+        <path fill="#34A853" d="M8.98 17c2.16 0 3.97-.72 5.3-1.94l-2.6-2a4.8 4.8 0 0 1-7.18-2.54H1.83v2.07A8 8 0 0 0 8.98 17z"/>
+        <path fill="#FBBC05" d="M4.5 10.52a4.8 4.8 0 0 1 0-3.04V5.41H1.83a8 8 0 0 0 0 7.18l2.67-2.07z"/>
+        <path fill="#EA4335" d="M8.98 4.18c1.17 0 2.23.4 3.06 1.2l2.3-2.3A8 8 0 0 0 1.83 5.4L4.5 7.49a4.77 4.77 0 0 1 4.48-3.3z"/>
+      </svg>
+      Continue with Google
+    </button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<!-- ╔══════════════════════════════════════════════════════════╗
+     ║                     SCRIPTS                               ║
+     ╚══════════════════════════════════════════════════════════╝ -->
+<script src="js/data.js"></script>
+<script src="js/algorithms.js"></script>
+<script src="js/app.js"></script>
+
+<script>
+// Fix auth tab switching for sign-up fields
+function submitAuth() {
+  const tab = document.querySelector('.auth-tab-btn.active')?.dataset.tab;
+  let email, pass, name;
+  if (tab === 'signup') {
+    name  = document.getElementById('auth-name')?.value?.trim();
+    email = document.getElementById('auth-email-2')?.value?.trim();
+    pass  = document.getElementById('auth-pass-2')?.value;
+  } else {
+    email = document.getElementById('auth-email')?.value?.trim();
+    pass  = document.getElementById('auth-pass')?.value;
+  }
+  if (!email || !pass) { showToast('Please fill in all fields'); return; }
+  if (pass.length < 6) { showToast('Password must be at least 6 characters'); return; }
+  const colors = ['#FF6B35','#00D4FF','#22C55E','#A855F7','#F59E0B','#EF4444','#06B6D4'];
+  APP.userState.loggedIn = true;
+  APP.userState.name     = (tab === 'signup' && name) ? name : email.split('@')[0];
+  APP.userState.avatar   = APP.userState.name.slice(0,2).toUpperCase();
+  APP.userState.color    = colors[Math.floor(Math.random() * colors.length)];
+  saveUserState();
+  updateHeaderUser();
+  closeAuth();
+  showToast(`Welcome, ${APP.userState.name}! 🎉`);
+  // Update sidebar subs
+  renderSidebarSubs();
+}
+
+function renderSidebarSubs() {
+  const el   = document.getElementById('sidebar-subs');
+  const subs = APP.userState.subscriptions;
+  if (!el || !subs.length) return;
+  const items = subs.map(id => {
+    const ch = CHANNELS.find(c => c.id === id);
+    if (!ch) return '';
+    return `<div class="sub-channel-link" onclick="navigate('channel','${ch.id}');closeSidebar()">
+      <div class="avatar" style="width:26px;height:26px;font-size:10px;background:${ch.color}">${ch.avatar}</div>
+      <span style="font-size:13px">${ch.name}</span>
+    </div>`;
+  }).join('');
+  el.innerHTML = `<div class="nav-section-title">Subscriptions</div>${items}`;
+}
+
+// Override toggleSubscribe to also update sidebar
+const _origToggleSub = toggleSubscribe;
+function toggleSubscribe(channelId, btn) {
+  _origToggleSub(channelId, btn);
+  renderSidebarSubs();
+}
+
+// Update user menu names on login
+const _origUpdateHeader = updateHeaderUser;
+function updateHeaderUser() {
+  _origUpdateHeader();
+  const u = APP.userState;
+  const mn = document.getElementById('menu-name');
+  const mh = document.getElementById('menu-handle');
+  if (mn) mn.textContent = u.name || 'Guest';
+  if (mh) mh.textContent = '@' + (u.name||'guest').toLowerCase().replace(/\s+/g,'');
+  renderSidebarSubs();
+}
+</script>
+
+</body>
+</html>
